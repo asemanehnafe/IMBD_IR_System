@@ -29,17 +29,17 @@ expected_fields = {
     "budget": str,
     "gross_worldwide": str,
     "rating": str,
-    "directors": List[str],
-    "writers": List[str],
-    "stars": List[str],
-    "related_links": List[str],
-    "genres": List[str],
-    "languages": List[str],
-    "countries_of_origin": List[str],
-    "summaries": List[str],
-    "synopsis": List[str],
-    "reviews": List[List[str]],
+    "directors": List[str].__origin__,
+    "writers": List[str].__origin__,
+    "stars": List[str].__origin__,
+    "related_links": List[str].__origin__,
+    "genres": List[str].__origin__,
+    "languages": List[str].__origin__,
+    "countries_of_origin": List[str].__origin__,
+    "summaries": List[str].__origin__,
+    "synopsis": List[str].__origin__,
+    "reviews": List[List[str]].__origin__,
 }
 
-json_file_path = "../IMDB_crawled.json"
+json_file_path = "IMDB_crawled.json"
 check_field_types(json_file_path, expected_fields)
