@@ -71,12 +71,11 @@ class IMDbCrawler:
         Read the crawled files from json
         """
         # TODO
-        with open('../IMDB_crawled.json', 'r') as f:
+        with open('IMDB_crawled.json', 'r') as f:
             self.crawled = json.load(f)
-        with open('../IMDB_not_crawled.json', 'r') as f:
+        with open('IMDB_not_crawled.json', 'r') as f:
             data = json.load(f)
         self.not_crawled.extend(data)
-        print(len(self.not_crawled))
         
         self.added_ids = set(u['id'] for u in self.crawled) | set(self.get_id_from_URL(u) for u in self.not_crawled)
         
@@ -694,9 +693,9 @@ class IMDbCrawler:
 
 def main():
     imdb_crawler = IMDbCrawler(crawling_threshold=1000)
-    #imdb_crawler.read_from_file_as_json()
-    imdb_crawler.start_crawling()
+    imdb_crawler.read_from_file_as_json()
+    #imdb_crawler.start_crawling()
     print(f"{len(imdb_crawler.crawled)} pages crawled")
-    imdb_crawler.write_to_file_as_json()
+    #imdb_crawler.write_to_file_as_json()
 if __name__ == '__main__':
     main()
