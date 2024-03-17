@@ -60,10 +60,10 @@ class IMDbCrawler:
         Save the crawled files into json
         """
         not_crawled_list = list(self.not_crawled)
-        with open('IMDB_sample_crawled.json', 'w') as f:
+        with open('IMDB_crawled.json', 'w') as f:
             json.dump(self.crawled, f)
 
-        with open('IMDB_sample_not_crawled.json', 'w') as f:
+        with open('IMDB_not_crawled.json', 'w') as f:
             json.dump(not_crawled_list, f)
 
     def read_from_file_as_json(self):
@@ -71,9 +71,9 @@ class IMDbCrawler:
         Read the crawled files from json
         """
         # TODO
-        with open('../IMDB_crawled2.json', 'r') as f:
+        with open('../IMDB_crawled.json', 'r') as f:
             self.crawled = json.load(f)
-        with open('../IMDB_not_crawled2.json', 'r') as f:
+        with open('../IMDB_not_crawled.json', 'r') as f:
             data = json.load(f)
         self.not_crawled.extend(data)
         print(len(self.not_crawled))
@@ -502,9 +502,9 @@ class IMDbCrawler:
                 score_element = review_element.find('span', class_='rating-other-user-rating')
                 if score_element:
                     score = score_element.find('span').get_text(strip=True)
-                    reviews_with_scores.append([review_text, score])
+                    reviews_with_scores.append((review_text, score))
                 else:
-                    reviews_with_scores.append([review_text, None])
+                    reviews_with_scores.append((review_text, ''))
 
             return reviews_with_scores
         except:
@@ -693,7 +693,7 @@ class IMDbCrawler:
 
 
 def main():
-    imdb_crawler = IMDbCrawler(crawling_threshold=100)
+    imdb_crawler = IMDbCrawler(crawling_threshold=1000)
     #imdb_crawler.read_from_file_as_json()
     imdb_crawler.start_crawling()
     print(f"{len(imdb_crawler.crawled)} pages crawled")
