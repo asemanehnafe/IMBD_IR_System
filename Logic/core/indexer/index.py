@@ -3,7 +3,7 @@ import os
 import json
 import copy
 from indexes_enum import Indexes
-
+import collections
 
 class Index:
     def __init__(self, preprocessed_documents: list):
@@ -30,10 +30,7 @@ class Index:
         dict
             The index of the documents based on the document ID.
         """
-
-        current_index = {}
-        #         TODO
-
+        current_index = {doc["id"]: doc for doc in self.preprocessed_documents}
         return current_index
 
     def index_stars(self):
@@ -46,9 +43,12 @@ class Index:
             The index of the documents based on the stars. You should also store each terms' tf in each document.
             So the index type is: {term: {document_id: tf}}
         """
-
-        #         TODO
-        pass
+        current_index = collections.defaultdict(lambda: collections.defaultdict(int))
+        for doc in self.preprocessed_documents:
+            for star in doc['stars']:
+                for name in star:
+                    current_index[name][doc["id"]] += 1
+        return current_index
 
     def index_genres(self):
         """
@@ -61,8 +61,12 @@ class Index:
             So the index type is: {term: {document_id: tf}}
         """
 
-        #         TODO
-        pass
+        current_index = collections.defaultdict(lambda: collections.defaultdict(int))
+        for doc in self.preprocessed_documents:
+            for genre in doc['genres']:
+                #TODO: should I split? corrct it in one doc too if yes
+                current_index[genre][doc["id"]] = doc['genres'].count(genre)
+        return current_index
 
     def index_summaries(self):
         """
@@ -74,10 +78,12 @@ class Index:
             The index of the documents based on the summaries. You should also store each terms' tf in each document.
             So the index type is: {term: {document_id: tf}}
         """
-
-        current_index = {}
-        #         TODO
-
+        #TODO: is storing number as tf ok or should be char
+        current_index = collections.defaultdict(lambda: collections.defaultdict(int))
+        for doc in self.preprocessed_documents:
+            for summary in doc['summaries']:
+                for word in summary.split():
+                    current_index[word][doc["id"]] += 1
         return current_index
 
     def get_posting_list(self, word: str, index_type: str):
@@ -98,9 +104,8 @@ class Index:
         """
 
         try:
-            #         TODO
-            pass
-        except:
+            return list(self.index[index_type][word].keys())
+        except KeyError:
             return []
 
     def add_document_to_index(self, document: dict):
@@ -111,10 +116,23 @@ class Index:
         ----------
         document : dict
             Document to add to all the indexes
-        """
-
-        #         TODO
-        pass
+        """ 
+        #TODO: check of doc is not allready indexed           
+        for index_type in self.index.keys():
+            #if document["id"] not in self.index[index_type].values():
+            if index_type == Indexes.STARS.value:
+                for star in document['stars']:
+                    for name in star.split():
+                        self.index[index_type][name][document["id"]] += 1
+            elif index_type == Indexes.GENRES.value:
+                for genre in document['genres']:
+                    self.index[index_type][genre][document["id"]] = document['genres'].count(genre)
+            elif index_type == Indexes.SUMMARIES.value:
+                for summary in document['summaries']:
+                    for word in summary.split():
+                        self.index[index_type][word][document["id"]] += 1
+            else:
+                self.index[index_type][document["id"]] = document
 
     def remove_document_from_index(self, document_id: str):
         """
@@ -125,9 +143,21 @@ class Index:
         document_id : str
             ID of the document to remove from all the indexes
         """
+        index_type = Indexes.STARS.value
+        for posting_list in self.index[index_type].values():                
+            posting_list.pop(document_id, None) 
 
-        #         TODO
-        pass
+        index_type = Indexes.GENRES.value
+        for posting_list in self.index[index_type].values():
+            posting_list.pop(document_id, None)
+
+        index_type = Indexes.SUMMARIES.value
+        for posting_list in self.index[index_type].values():
+            posting_list.pop(document_id, None)
+
+        index_type = Indexes.DOCUMENTS.value
+        self.index[index_type].pop(document_id, None)
+
 
     def check_add_remove_is_correct(self):
         """
@@ -197,17 +227,20 @@ class Index:
         """
 
         if not os.path.exists(path):
-            os.makedirs(path)
+            os.makedirs(path)   
 
         if index_type is None:
-            # TODO
-            pass
+            # Store the tiered index
+            with open(os.path.join(path, "tiered_index.json"), "w") as f:
+                json.dump(self.index, f, indent=4)
+        else:
+            if index_type not in self.index:
+                raise ValueError("Invalid index type")
 
-        if index_type not in self.index:
-            raise ValueError('Invalid index type')
+            # Store the specific index type
+            with open(os.path.join(path, f"{index_type}_index.json"), "w") as f:
+                json.dump(self.index[index_type], f, indent=4)
 
-        #         TODO
-        pass
 
     def load_index(self, path: str):
         """
@@ -218,9 +251,20 @@ class Index:
         path : str
             Path to load the file
         """
+        if not os.path.exists(path):
+            raise FileNotFoundError("Index file not found")
 
-        #         TODO
-        pass
+        if os.path.isfile(os.path.join(path, "index.json")):
+            # Load the tiered index
+            with open(os.path.join(path, "index.json"), "r") as f:
+                self.index = json.load(f)
+        else:
+            # Load specific index type
+            for index_type in Indexes:
+                filename = os.path.join(path, f"{index_type.value}_index.json")
+                if os.path.isfile(filename):
+                    with open(filename, "r") as f:
+                        self.index[index_type.value] = json.load(f)
 
     def check_if_index_loaded_correctly(self, index_type: str, loaded_index: dict):
         """
@@ -303,3 +347,6 @@ class Index:
             return False
 
 # TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
+
+kir = Index([])
+kir.check_add_remove_is_correct()
