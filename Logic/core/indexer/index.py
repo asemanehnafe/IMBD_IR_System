@@ -46,7 +46,7 @@ class Index:
         current_index = collections.defaultdict(lambda: collections.defaultdict(int))
         for doc in self.preprocessed_documents:
             for star in doc['stars']:
-                for name in star:
+                for name in star.split():
                     current_index[name][doc["id"]] += 1
         return current_index
 
@@ -231,8 +231,8 @@ class Index:
         if index_name not in self.index:
             raise ValueError('Invalid index name')
 
-        # TODO
-        pass
+        with open(os.path.join(path, f"{index_name}_index.json"), 'w') as f:
+            json.dump(self.index[index_name], f)        
 
     def load_index(self, path: str):
         """
@@ -246,10 +246,10 @@ class Index:
         if not os.path.exists(path):
             raise FileNotFoundError("Index file not found")
 
-        if os.path.isfile(os.path.join(path, "index.json")):
-            # Load the tiered index
-            with open(os.path.join(path, "index.json"), "r") as f:
-                self.index = json.load(f)
+        # if os.path.isfile(os.path.join(path, "index.json")):
+        #     # Load the tiered index
+        #     with open(os.path.join(path, "index.json"), "r") as f:
+        #         self.index = json.load(f)
         else:
             # Load specific index type
             for index_type in Indexes:
@@ -339,6 +339,13 @@ class Index:
             return False
 
 # TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
-
-kir = Index([])
-kir.check_add_remove_is_correct()
+with open('IMDB_sample_crawled.json', 'r') as f:
+    movies = json.load(f)
+index = Index(movies)
+index.store_index('./index', Indexes.DOCUMENTS.value)
+index.store_index('./index', Indexes.STARS.value)
+index.store_index('./index', Indexes.GENRES.value)
+index.store_index('./index', Indexes.SUMMARIES.value)
+index.check_add_remove_is_correct()
+index.load_index('./index')
+index.check_if_indexing_is_good(Indexes.SUMMARIES)
