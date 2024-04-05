@@ -45,9 +45,10 @@ class Index:
         """
         current_index = collections.defaultdict(lambda: collections.defaultdict(int))
         for doc in self.preprocessed_documents:
-            for star in doc['stars']:
-                for name in star.split():
-                    current_index[name][doc["id"]] += 1
+            if(doc['stars']):
+                for star in doc['stars']:
+                    for name in star.split():
+                        current_index[name][doc["id"]] += 1
         return current_index
 
     def index_genres(self):
@@ -63,9 +64,11 @@ class Index:
 
         current_index = collections.defaultdict(lambda: collections.defaultdict(int))
         for doc in self.preprocessed_documents:
-            for genre in doc['genres']:
-                #TODO: should I split? corrct it in one doc too if yes
-                current_index[genre][doc["id"]] = doc['genres'].count(genre)
+            if(doc['genres']):
+                for genre in doc['genres']:
+                    for genre_part in genre.split():
+                        #TODO: should I split? corrct it in one doc too if yes
+                        current_index[genre_part][doc["id"]] += 1
         return current_index
 
     def index_summaries(self):
@@ -78,12 +81,13 @@ class Index:
             The index of the documents based on the summaries. You should also store each terms' tf in each document.
             So the index type is: {term: {document_id: tf}}
         """
-        #TODO: is storing number as tf ok or should be char
+        #TODO: is storing tf as int ok or should be char
         current_index = collections.defaultdict(lambda: collections.defaultdict(int))
         for doc in self.preprocessed_documents:
-            for summary in doc['summaries']:
-                for word in summary.split():
-                    current_index[word][doc["id"]] += 1
+            if(doc['summaries']):
+                for summary in doc['summaries']:
+                    for word in summary.split():
+                        current_index[word][doc["id"]] += 1
         return current_index
 
     def get_posting_list(self, word: str, index_type: str):
@@ -121,16 +125,20 @@ class Index:
         for index_type in self.index.keys():
             #if document["id"] not in self.index[index_type].values():
             if index_type == Indexes.STARS.value:
-                for star in document['stars']:
-                    for name in star.split():
-                        self.index[index_type][name][document["id"]] += 1
+                if(document['stars']):
+                    for star in document['stars']:
+                        for name in star.split():
+                            self.index[index_type][name][document["id"]] += 1
             elif index_type == Indexes.GENRES.value:
-                for genre in document['genres']:
-                    self.index[index_type][genre][document["id"]] = document['genres'].count(genre)
+                if(document['genres']):
+                    for genre in document['genres']:
+                        for genre_part in genre.split():
+                            self.index[index_type][genre_part][document["id"]] += 1
             elif index_type == Indexes.SUMMARIES.value:
-                for summary in document['summaries']:
-                    for word in summary.split():
-                        self.index[index_type][word][document["id"]] += 1
+                if(document['summaries']):
+                    for summary in document['summaries']:
+                        for word in summary.split():
+                            self.index[index_type][word][document["id"]] += 1
             else:
                 self.index[index_type][document["id"]] = document
 
@@ -245,11 +253,6 @@ class Index:
         """
         if not os.path.exists(path):
             raise FileNotFoundError("Index file not found")
-
-        # if os.path.isfile(os.path.join(path, "index.json")):
-        #     # Load the tiered index
-        #     with open(os.path.join(path, "index.json"), "r") as f:
-        #         self.index = json.load(f)
         else:
             # Load specific index type
             for index_type in Indexes:
@@ -258,7 +261,7 @@ class Index:
                     with open(filename, "r") as f:
                         self.index[index_type.value] = json.load(f)
 
-    def check_if_index_loaded_correctly(self, index_type: str, loaded_index: dict):
+    def check_if_index_loaded_correctly(self, index_name: str, loaded_index: dict):
         """
         Check if the index is loaded correctly
 
@@ -275,7 +278,7 @@ class Index:
             True if index is loaded correctly, False otherwise
         """
 
-        return self.index[index_type] == loaded_index
+        return self.index[index_name] == loaded_index
 
     def check_if_indexing_is_good(self, index_type: str, check_word: str = 'good'):
         """
@@ -339,13 +342,15 @@ class Index:
             return False
 
 # TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
-with open('IMDB_sample_crawled.json', 'r') as f:
+with open('IMDB_crawled.json', 'r') as f:
     movies = json.load(f)
-index = Index(movies)
-index.store_index('./index', Indexes.DOCUMENTS.value)
-index.store_index('./index', Indexes.STARS.value)
-index.store_index('./index', Indexes.GENRES.value)
-index.store_index('./index', Indexes.SUMMARIES.value)
-index.check_add_remove_is_correct()
-index.load_index('./index')
-index.check_if_indexing_is_good(Indexes.SUMMARIES)
+indexer = Index(movies)
+indexer.store_index('./index', Indexes.DOCUMENTS.value)
+indexer.store_index('./index', Indexes.STARS.value)
+indexer.store_index('./index', Indexes.GENRES.value)
+indexer.store_index('./index', Indexes.SUMMARIES.value)
+indexer.check_add_remove_is_correct()
+indexer.load_index('./index')
+for index_name in Indexes:
+    print(indexer.check_if_index_loaded_correctly(index_name.value, indexer.index[index_name.value] ))
+indexer.check_if_indexing_is_good(Indexes.SUMMARIES)

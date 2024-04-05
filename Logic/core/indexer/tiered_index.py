@@ -65,11 +65,11 @@ class Tiered_index:
         for term, posting_list in current_index.items():
             for doc_id, tf  in posting_list.items():
                 if tf >= first_tier_threshold:
-                    first_tier[term] = doc_id
+                    first_tier[term] = {doc_id:tf}
                 elif tf >= second_tier_threshold:
-                    second_tier[term] = doc_id 
+                    second_tier[term] = {doc_id:tf}
                 else:
-                    third_tier[term] = doc_id    
+                    third_tier[term] = {doc_id:tf}   
 
         return {
             "first_tier": first_tier,
