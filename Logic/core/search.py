@@ -1,9 +1,9 @@
 import json
 import numpy as np
-from .preprocess import Preprocessor
-from .scorer import Scorer
-from .indexer.indexes_enum import Indexes, Index_types
-from .indexer.index_reader import Index_reader
+from preprocess import Preprocessor
+from scorer import Scorer
+from indexer.indexes_enum import Indexes, Index_types
+from indexer.index_reader import Index_reader
 
 class SearchEngine:
     def __init__(self):
@@ -11,23 +11,23 @@ class SearchEngine:
         Initializes the search engine.
 
         """
-        path = '/index'
+        path = './index'
         self.document_indexes = {
-            Indexes.STARS: Index_reader(path, Indexes.STARS),
-            Indexes.GENRES: Index_reader(path, Indexes.GENRES),
-            Indexes.SUMMARIES: Index_reader(path, Indexes.SUMMARIES)
+            Indexes.STARS: Index_reader(path, Indexes.STARS).get_index(),
+            Indexes.GENRES: Index_reader(path, Indexes.GENRES).get_index(),
+            Indexes.SUMMARIES: Index_reader(path, Indexes.SUMMARIES).get_index()
         }
         self.tiered_index = {
-            Indexes.STARS: Index_reader(path, Indexes.STARS, Index_types.TIERED),
-            Indexes.GENRES: Index_reader(path, Indexes.GENRES, Index_types.TIERED),
-            Indexes.SUMMARIES: Index_reader(path, Indexes.SUMMARIES, Index_types.TIERED)
+            Indexes.STARS: Index_reader(path, Indexes.STARS, Index_types.TIERED).get_index(),
+            Indexes.GENRES: Index_reader(path, Indexes.GENRES, Index_types.TIERED).get_index(),
+            Indexes.SUMMARIES: Index_reader(path, Indexes.SUMMARIES, Index_types.TIERED).get_index()
         }
         self.document_lengths_index = {
-            Indexes.STARS: Index_reader(path, Indexes.STARS, Index_types.DOCUMENT_LENGTH),
-            Indexes.GENRES: Index_reader(path, Indexes.GENRES, Index_types.DOCUMENT_LENGTH),
-            Indexes.SUMMARIES: Index_reader(path, Indexes.SUMMARIES, Index_types.DOCUMENT_LENGTH)
+            Indexes.STARS: Index_reader(path, Indexes.STARS, Index_types.DOCUMENT_LENGTH).get_index(),
+            Indexes.GENRES: Index_reader(path, Indexes.GENRES, Index_types.DOCUMENT_LENGTH).get_index(),
+            Indexes.SUMMARIES: Index_reader(path, Indexes.SUMMARIES, Index_types.DOCUMENT_LENGTH).get_index()
         }
-        self.metadata_index = Index_reader(path, Indexes.DOCUMENTS, Index_types.METADATA)
+        self.metadata_index = Index_reader(path, Indexes.DOCUMENTS, Index_types.METADATA).get_index()
 
     def search(self, query, method, weights, safe_ranking = True, max_results=10):
         """
@@ -86,13 +86,12 @@ class SearchEngine:
             The final scores of the documents.
         """
         for field, weight in weights.items():
-            field_score = scores[field] * weight
-            for doc_id , score in field_score:
-                if doc_id in final_scores:
-                    final_scores[doc_id]  += score
-                else:
-                    final_scores[doc_id] = score
-        pass
+            if(scores[field]):
+                for doc_id , score in scores[field].items():
+                    if doc_id in final_scores:
+                        final_scores[doc_id]  += score
+                    else:
+                        final_scores[doc_id] = score
 
     def find_scores_with_unsafe_ranking(self, query, method, weights, max_results, scores):
         """
@@ -116,11 +115,13 @@ class SearchEngine:
             for tier in ["first_tier", "second_tier", "third_tier"]:
                 scorer = Scorer(self.tiered_index[field][tier], self.metadata_index['document_count'])
                 if(method == 'OkapiBM25'):
-                    scores[field].extend(scorer.compute_socres_with_okapi_bm25(query, method))
+                    adl = self.metadata_index.index["averge_document_length"][field.value]
+                    dls = self.document_lengths_index[field]
+                    scores[field].update(scorer.compute_socres_with_okapi_bm25(query, adl, dls))
                 else:
-                    scores[field].extend(scorer.compute_scores_with_vector_space_model(query, method))
+                    scores[field].update(scorer.compute_scores_with_vector_space_model(query, method))
                 if(len(scores[field])) > max_results:
-                    break                
+                    break              
 
     def find_scores_with_safe_ranking(self, query, method, weights, scores):
         """
@@ -142,9 +143,11 @@ class SearchEngine:
             scores[field] = {}
             scorer = Scorer(self.document_indexes[field], self.metadata_index['document_count'])
             if(method == 'OkapiBM25'):
-                scores[field].extend(scorer.compute_socres_with_okapi_bm25(query, method))
+                adl = self.metadata_index.index["averge_document_length"][field.value]
+                dls = self.document_lengths_index[field]
+                scores[field].update(scorer.compute_socres_with_okapi_bm25(query, adl, dls))
             else:
-                scores[field].extend(scorer.compute_scores_with_vector_space_model(query, method))
+                scores[field].update(scorer.compute_scores_with_vector_space_model(query, method))
 
     def merge_scores(self, scores1, scores2):
         """
@@ -162,8 +165,7 @@ class SearchEngine:
         dict
             The merged dictionary of scores.
         """
-
-        #TODO
+        pass
 
 
 if __name__ == '__main__':

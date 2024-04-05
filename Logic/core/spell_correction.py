@@ -106,7 +106,7 @@ class SpellCorrection:
         """
         top5_candidates = list()
 
-        # TODO: Find 5 nearest candidates here.
+        #Find 5 nearest candidates here.
         query_shingles = self.shingle_word(word)
         scores = []
         for candidate, shingles in self.all_shingled_words.items():

@@ -255,11 +255,11 @@ class Index:
             raise FileNotFoundError("Index file not found")
         else:
             # Load specific index type
-            for index_type in Indexes:
-                filename = os.path.join(path, f"{index_type.value}_index.json")
+            for index_name in Indexes:
+                filename = os.path.join(path, f"{index_name.value}_index.json")
                 if os.path.isfile(filename):
                     with open(filename, "r") as f:
-                        self.index[index_type.value] = json.load(f)
+                        print(indexer.check_if_index_loaded_correctly(index_name.value, indexer.index[index_name.value] ))
 
     def check_if_index_loaded_correctly(self, index_name: str, loaded_index: dict):
         """
@@ -351,6 +351,4 @@ indexer.store_index('./index', Indexes.GENRES.value)
 indexer.store_index('./index', Indexes.SUMMARIES.value)
 indexer.check_add_remove_is_correct()
 indexer.load_index('./index')
-for index_name in Indexes:
-    print(indexer.check_if_index_loaded_correctly(index_name.value, indexer.index[index_name.value] ))
 indexer.check_if_indexing_is_good(Indexes.SUMMARIES)

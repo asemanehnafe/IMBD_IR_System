@@ -187,15 +187,14 @@ class IMDbCrawler:
             self.extract_movie_info(res, movie, URL)
             with self.add_queue_lock:
                 self.crawled.append(movie)
-        # else:
-        #     print(res,' ', URL)
 
         for m in movie['related_links']:
-            if m not in self.added_ids:
-                with self.add_queue_lock:
-                    self.not_crawled.append(m)
+            id = self.get_id_from_URL(m)
+            if id not in self.added_ids:
                 with self.add_list_lock:
                     self.added_ids.add(self.get_id_from_URL(m))
+                with self.add_queue_lock:
+                    self.not_crawled.append(m)
 
 
     def extract_movie_info(self, res, movie, URL):
@@ -424,6 +423,7 @@ class IMDbCrawler:
             return urls
         except:
             print("failed to get related links")
+            return []
 
     def get_summary(self, soup):
         """

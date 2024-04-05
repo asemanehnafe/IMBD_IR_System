@@ -66,7 +66,10 @@ class Scorer:
         idf = self.idf.get(term, None)
         if idf is None:
             df = len(self.index.get(term, {}))
-            idf = np.log(self.N / df)
+            if df != 0:
+                idf = np.log(self.N / df)
+            else:
+                idf = 0
             self.idf[term] = idf
         return idf
     
@@ -112,6 +115,8 @@ class Scorer:
         return scores
     
     def cal(self, tf, idf, method):
+        for i in range(len(tf)):
+            tf[i] += 0.1
         if method == "nnn":
             return tf
         elif method == "nnc":
