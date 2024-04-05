@@ -1,9 +1,9 @@
 import json
 import numpy as np
-from preprocess import Preprocessor
-from scorer import Scorer
-from indexer.indexes_enum import Indexes, Index_types
-from indexer.index_reader import Index_reader
+from .preprocess import Preprocessor
+from .scorer import Scorer
+from .indexer.indexes_enum import Indexes, Index_types
+from .indexer.index_reader import Index_reader
 
 class SearchEngine:
     def __init__(self):
@@ -67,7 +67,7 @@ class SearchEngine:
         self.aggregate_scores(weights, scores, final_scores)
         
         result = sorted(final_scores.items(), key=lambda x: x[1], reverse=True)
-        if max_results is not None:
+        if max_results != -1:
             result = result[:max_results]
 
         return result
@@ -115,12 +115,12 @@ class SearchEngine:
             for tier in ["first_tier", "second_tier", "third_tier"]:
                 scorer = Scorer(self.tiered_index[field][tier], self.metadata_index['document_count'])
                 if(method == 'OkapiBM25'):
-                    adl = self.metadata_index.index["averge_document_length"][field.value]
+                    adl = self.metadata_index["averge_document_length"][field.value]
                     dls = self.document_lengths_index[field]
                     scores[field].update(scorer.compute_socres_with_okapi_bm25(query, adl, dls))
                 else:
                     scores[field].update(scorer.compute_scores_with_vector_space_model(query, method))
-                if(len(scores[field])) > max_results:
+                if max_results != -1 and (len(scores[field])) > max_results:
                     break              
 
     def find_scores_with_safe_ranking(self, query, method, weights, scores):
@@ -143,7 +143,7 @@ class SearchEngine:
             scores[field] = {}
             scorer = Scorer(self.document_indexes[field], self.metadata_index['document_count'])
             if(method == 'OkapiBM25'):
-                adl = self.metadata_index.index["averge_document_length"][field.value]
+                adl = self.metadata_index["averge_document_length"][field.value]
                 dls = self.document_lengths_index[field]
                 scores[field].update(scorer.compute_socres_with_okapi_bm25(query, adl, dls))
             else:

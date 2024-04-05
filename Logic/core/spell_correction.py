@@ -142,15 +142,15 @@ class SpellCorrection:
         str
             Correct form of the query.
         """
-        final_result = ""
+        final_result = []
         for word in query.lower().split():
             if word in self.word_counter:
-                final_result += word
+                final_result.append(word)
             else:
                 nearest_words = self.find_nearest_words(word)
                 if nearest_words:
-                    final_result += self.find_best(word, nearest_words)
+                    final_result.append(self.find_best(word, nearest_words))
                 else:
-                    final_result += word
+                    final_result.append(word)
 
-        return final_result
+        return ' '.join(final_result)

@@ -5,8 +5,22 @@ from .core.snippet import Snippet
 from .core.indexer.indexes_enum import Indexes, Index_types
 import json
 
-movies_dataset = None  # TODO
+def load_dataset():
+    with open('IMDB_crawled.json', 'r') as f:
+        return json.load(f)
+    
+def get_all_doc_string():
+    all_doc_string = []
+    #TODO: use preprocessed 
+    for movie in movies_dataset:
+            all_doc_string.append('  '.join(star for star in movie['stars']))
+            all_doc_string.append('  '.join(star for star in movie['genres']))
+            all_doc_string.append('  '.join(star for star in movie['summaries']))
+    return all_doc_string
+
+movies_dataset = load_dataset()
 search_engine = SearchEngine()
+all_movies_string = get_all_doc_string()
 
 
 def correct_text(text: str, all_documents: List[str]) -> str:
@@ -61,7 +75,11 @@ def search(
     list
     Retrieved documents with snippet
     """
-    weights = ...  # TODO
+    weights = {
+        Indexes.STARS: weights[0],
+        Indexes.GENRES: weights[1],
+        Indexes.SUMMARIES: weights[2]
+    }
     return search_engine.search(
         query, method, weights, max_results=max_result_count, safe_ranking=True
     )
@@ -84,17 +102,10 @@ def get_movie_by_id(id: str, movies_dataset: List[Dict[str, str]]) -> Dict[str, 
     dict
         The movie with the given id
     """
-    result = movies_dataset.get(
-        id,
-        {
-            "Title": "This is movie's title",
-            "Summary": "This is a summary",
-            "URL": "https://www.imdb.com/title/tt0111161/",
-            "Cast": ["Morgan Freeman", "Tim Robbins"],
-            "Genres": ["Drama", "Crime"],
-            "Image_URL": "https://m.media-amazon.com/images/M/MV5BNDE3ODcxYzMtY2YzZC00NmNlLWJiNDMtZDViZWM2MzIxZDYwXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg",
-        },
-    )
+    result = {}
+    for movie in movies_dataset:
+        if movie.get("id") == id:
+            result = movie
 
     result["Image_URL"] = (
         "https://m.media-amazon.com/images/M/MV5BNDE3ODcxYzMtY2YzZC00NmNlLWJiNDMtZDViZWM2MzIxZDYwXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg"  # a default picture for selected movies

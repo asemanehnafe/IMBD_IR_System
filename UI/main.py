@@ -1,8 +1,9 @@
 import streamlit as st
 import sys
 import os
-#sys.path.append("../")
+# sys.path.append("../")
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
+sys.path.append('d:\\dars\\MIR project 2024\\IMBD_IR_System')
 from Logic import utils
 import time
 from enum import Enum
@@ -52,7 +53,7 @@ def search_handling(
     search_method,
 ):
     if search_button:
-        corrected_query = utils.correct_text(search_term, utils.movies_dataset)
+        corrected_query = utils.correct_text(search_term, utils.all_movies_string)
 
         if corrected_query != search_term:
             st.warning(f"Your search terms were corrected to: {corrected_query}")
