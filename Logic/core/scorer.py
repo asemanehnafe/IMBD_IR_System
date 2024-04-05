@@ -65,8 +65,7 @@ class Scorer:
         """
         idf = self.idf.get(term, None)
         if idf is None:
-            df = len(self.index[term])
-            #TODO:idf = np.log((self.N - df + 0.5) / (df + 0.5) + 1)
+            df = len(self.index.get(term, {}))
             idf = np.log(self.N / df)
             self.idf[term] = idf
         return idf
@@ -90,8 +89,6 @@ class Scorer:
             query_tfs[term] = query_tfs.get(term, 0) + 1
         return query_tfs
 
-
-
     def compute_scores_with_vector_space_model(self, query, method):
         """
         compute scores with vector space model
@@ -111,7 +108,7 @@ class Scorer:
         scores = {}
         query_tfs = self.get_query_tfs(query)
         for document_id in self.get_list_of_documents(query):
-            scores[document_id] = self.get_vector_space_model_score(query, query_tfs, document_id, method[0:3], method[4,7])
+            scores[document_id] = self.get_vector_space_model_score(query, query_tfs, document_id, method[0:3], method[4:7])
         return scores
     
     def cal(self, tf, idf, method):
@@ -122,15 +119,18 @@ class Scorer:
         elif method == "ntn":
             return tf * idf
         elif method == "ntc":
-            return tf * idf/ np.linalg.norm(tf)
+            w = tf * idf
+            return w / np.linalg.norm(w)
         elif method == "lnn":
             return 1 + np.log(tf)
         elif method == "lnc":
-            return (1 + np.log(tf)) / np.linalg.norm(tf)
+            w = 1 + np.log(tf)
+            return w / np.linalg.norm(w)
         elif method == "ltn":
             return (1 + np.log(tf)) * idf
         elif method == "ltc":
-            return (1 + np.log(tf)) * idf / np.linalg.norm(tf) 
+            w =  (1 + np.log(tf)) * idf 
+            return w / np.linalg.norm(w) 
 
     def get_vector_space_model_score(self, query, query_tfs, document_id, document_method, query_method):
         """
@@ -179,10 +179,11 @@ class Scorer:
         dict
             A dictionary of the document IDs and their scores.
         """
-
-        # TODO
-        pass
-
+        scores = {}
+        for document_id in self.get_list_of_documents(query):
+            scores[document_id] = self.get_okapi_bm25_score(query, document_id, average_document_field_length, document_lengths)
+        return scores
+    
     def get_okapi_bm25_score(self, query, document_id, average_document_field_length, document_lengths):
         """
         Returns the Okapi BM25 score of a document for a query.
@@ -204,6 +205,12 @@ class Scorer:
         float
             The Okapi BM25 score of the document for the query.
         """
-
-        # TODO
-        pass
+        score = 0
+        k1 = 1.2
+        b= 0.75
+        for term in query:
+            tf = self.index.get(term, {}).get(document_id, 0)
+            idf = self.get_idf(term)
+            dl = document_lengths[document_id]
+            score += idf * ((k1+ 1) * tf )/(k1 * ((1-b) + b * dl/average_document_field_length) + tf)
+        return score

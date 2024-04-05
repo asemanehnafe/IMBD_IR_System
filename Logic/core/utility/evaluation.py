@@ -1,11 +1,22 @@
-
 from typing import List
+import numpy as np
+import wandb
 
 class Evaluation:
 
     def __init__(self, name: str):
             self.name = name
-
+    def precision_by_quary(self, actual: List[str], predicted: List[str]):
+        precision = 0.0
+        if len(predicted) == 0:
+            return 0.0
+        num_relevant = 0
+        for item in predicted:
+            if item in actual:
+                num_relevant += 1
+        precision = num_relevant / len(predicted)
+        return precision
+    
     def calculate_precision(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
         Calculates the precision of the predicted results
@@ -22,11 +33,27 @@ class Evaluation:
         float
             The precision of the predicted results
         """
-        precision = 0.0
-
-        # TODO: Calculate precision here
+        #TODO: flat or mean?
+        # precision = []   
+        # for i, query in enumerate(predicted):
+        #     precision.append(self.precision_by_quary(actual[i], query))
+        # return np.mean(precision)
+        flat_actual = [item for sublist in actual for item in sublist]
+        flat_predicted = [item for sublist in predicted for item in sublist]
+        return self.precision_by_quary(flat_actual, flat_predicted)
         
-        return precision
+    def recal_by_quary(self, actual: List[str], predicted: List[str]):
+        recall = 0.0
+        if len(actual) == 0:
+            return 0.0
+
+        num_relevant = 0
+        for item in predicted:
+            if item in actual:
+                num_relevant += 1
+
+        recall = num_relevant / len(actual)
+        return recall
     
     def calculate_recall(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
@@ -44,11 +71,13 @@ class Evaluation:
         float
             The recall of the predicted results
         """
-        recall = 0.0
-
-        # TODO: Calculate recall here
-
-        return recall
+        # recals = []   
+        # for i, query in enumerate(predicted):
+        #     recals.append(self.recal_by_quary(actual[i], query))
+        # return np.mean(recals)    
+        flat_actual = [item for sublist in actual for item in sublist]
+        flat_predicted = [item for sublist in predicted for item in sublist]
+        return self.recal_by_quary(flat_actual, flat_predicted)
     
     def calculate_F1(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
@@ -66,15 +95,27 @@ class Evaluation:
         float
             The F1 score of the predicted results    
         """
-        f1 = 0.0
+        precision = self.calculate_precision(actual, predicted)
+        recall = self.calculate_recall(actual, predicted)
+        if precision + recall == 0:
+            return 0.0
+        return 2 * (precision * recall) / (precision + recall)
 
-        # TODO: Calculate F1 here
-
-        return f1
+    def AP_by_quary(self, actual: List[str], predicted: List[str]):
+        AP = 0.0
+        num_correct = 0
+        for i, item in enumerate(predicted):
+            if item in actual:
+                num_correct += 1
+                AP += num_correct / (i + 1)
+        if num_correct == 0:
+            return 0.0
+        AP /= num_correct
+        return AP
     
     def calculate_AP(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
-        Calculates the Mean Average Precision of the predicted results
+        Calculates the Average Precision of the predicted results
 
         Parameters
         ----------
@@ -88,11 +129,9 @@ class Evaluation:
         float
             The Average Precision of the predicted results
         """
-        AP = 0.0
-
-        # TODO: Calculate AP here
-
-        return AP
+        flat_actual = [item for sublist in actual for item in sublist]
+        flat_predicted = [item for sublist in predicted for item in sublist]
+        return self.AP_by_quary(flat_actual, flat_predicted)
     
     def calculate_MAP(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
@@ -110,21 +149,27 @@ class Evaluation:
         float
             The Mean Average Precision of the predicted results
         """
-        MAP = 0.0
-
-        # TODO: Calculate MAP here
-
-        return MAP
+        APs = []   
+        for i, query in enumerate(predicted):
+            APs.append(self.recal_by_quary(actual[i], query))
+        return np.mean(APs)    
     
-    def cacluate_DCG(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
+    def DCG_by_quary(self, actual: List[str], predicted: List[str])->float:
+        DCG = 0.0
+        for i, item in enumerate(predicted):
+            if item in actual:
+                DCG += 1 / np.log2(i + 2)
+        return DCG
+    
+    def calculate_DCG(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
         Calculates the Normalized Discounted Cumulative Gain (NDCG) of the predicted results
 
         Parameters
         ----------
-        actual : List[List[str]]
+        actual : List[str]
             The actual results
-        predicted : List[List[str]]
+        predicted : List[str]
             The predicted results
 
         Returns
@@ -132,11 +177,9 @@ class Evaluation:
         float
             The DCG of the predicted results
         """
-        DCG = 0.0
-
-        # TODO: Calculate DCG here
-
-        return DCG
+        flat_actual = [item for sublist in actual for item in sublist]
+        flat_predicted = [item for sublist in predicted for item in sublist]
+        return self.DG_by_quary(flat_actual, flat_predicted)
     
     def cacluate_NDCG(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
@@ -155,12 +198,24 @@ class Evaluation:
             The NDCG of the predicted results
         """
         NDCG = 0.0
-
-        # TODO: Calculate NDCG here
-
+        flat_actual = [item for sublist in actual for item in sublist]
+        flat_predicted = [item for sublist in predicted for item in sublist]
+        DCG = self.DCG_by_quary(flat_actual, flat_predicted)
+        ideal_DCG =  self.DCG_by_quary(flat_predicted, flat_actual)
+        if ideal_DCG == 0:
+            return 0.0
+        NDCG = DCG / ideal_DCG
         return NDCG
     
-    def cacluate_RR(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
+    def RR_by_query(self, actual: List[str], predicted: List[str]) -> float:
+        RR = 0.0
+        for i,predict in enumerate(predicted):
+            if predict in actual:
+                RR = 1/(i + 1)
+                break
+        return RR
+    
+    def calculate_RR(self, actual: List[List[str]], predicted: List[List[str]]):
         """
         Calculates the Mean Reciprocal Rank of the predicted results
 
@@ -176,11 +231,9 @@ class Evaluation:
         float
             The Reciprocal Rank of the predicted results
         """
-        RR = 0.0
-
-        # TODO: Calculate MRR here
-
-        return RR
+        flat_actual = [item for sublist in actual for item in sublist]
+        flat_predicted = [item for sublist in predicted for item in sublist]
+        return self.RR_by_quary(flat_actual, flat_predicted)
     
     def cacluate_MRR(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
@@ -198,11 +251,13 @@ class Evaluation:
         float
             The MRR of the predicted results
         """
-        MRR = 0.0
-
-        # TODO: Calculate MRR here
-
-        return MRR
+        # total_RR = sum(self.calculate_RR([a], [p]) for a, p in zip(actual, predicted))
+        # MRR = total_RR / len(actual)
+        # return MRR
+        MRRs = []   
+        for i, query in enumerate(predicted):
+            MRRs.append(self.cacluate_RR(actual[i], query))
+        return np.mean(MRRs)   
     
 
     def print_evaluation(self, precision, recall, f1, ap, map, dcg, ndcg, rr, mrr):
@@ -232,8 +287,15 @@ class Evaluation:
             
         """
         print(f"name = {self.name}")
-
-        #TODO: Print the evaluation metrics
+        print(f"Precision: {precision}")
+        print(f"Recall: {recall}")
+        print(f"F1 Score: {f1}")
+        print(f"Average Precision: {ap}")
+        print(f"Mean Average Precision: {map}")
+        print(f"Discounted Cumulative Gain: {dcg}")
+        print(f"Normalized Discounted Cumulative Gain: {ndcg}")
+        print(f"Reciprocal Rank: {rr}")
+        print(f"Mean Reciprocal Rank: {mrr}")
       
 
     def log_evaluation(self, precision, recall, f1, ap, map, dcg, ndcg, rr, mrr):
@@ -263,8 +325,18 @@ class Evaluation:
             
         """
         
-        #TODO: Log the evaluation metrics using Wandb
-
+        #Log the evaluation metrics using Wandb
+        wandb.log({
+        "Precision": precision,
+        "Recall": recall,
+        "F1 Score": f1,
+        "Average Precision": ap,
+        "Mean Average Precision": map,
+        "Discounted Cumulative Gain": dcg,
+        "Normalized Discounted Cumulative Gain": ndcg,
+        "Reciprocal Rank": rr,
+        "Mean Reciprocal Rank": mrr
+        })
 
     def calculate_evaluation(self, actual: List[List[str]], predicted: List[List[str]]):
         """
@@ -284,7 +356,7 @@ class Evaluation:
         f1 = self.calculate_F1(actual, predicted)
         ap = self.calculate_AP(actual, predicted)
         map_score = self.calculate_MAP(actual, predicted)
-        dcg = self.cacluate_DCG(actual, predicted)
+        dcg = self.calculate_DCG(actual, predicted)
         ndcg = self.cacluate_NDCG(actual, predicted)
         rr = self.cacluate_RR(actual, predicted)
         mrr = self.cacluate_MRR(actual, predicted)

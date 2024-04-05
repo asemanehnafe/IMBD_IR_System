@@ -1,7 +1,8 @@
 import streamlit as st
 import sys
-
-sys.path.append("../")
+import os
+#sys.path.append("../")
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from Logic import utils
 import time
 from enum import Enum
