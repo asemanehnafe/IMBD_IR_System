@@ -207,7 +207,7 @@ class Evaluation:
         NDCG = DCG / ideal_DCG
         return NDCG
     
-    def RR_by_query(self, actual: List[str], predicted: List[str]) -> float:
+    def RR_by_quary(self, actual: List[str], predicted: List[str]) -> float:
         RR = 0.0
         for i,predict in enumerate(predicted):
             if predict in actual:
@@ -256,7 +256,7 @@ class Evaluation:
         # return MRR
         MRRs = []   
         for i, query in enumerate(predicted):
-            MRRs.append(self.cacluate_RR(actual[i], query))
+            MRRs.append(self.RR_by_quary(actual[i], query))
         return np.mean(MRRs)   
     
 

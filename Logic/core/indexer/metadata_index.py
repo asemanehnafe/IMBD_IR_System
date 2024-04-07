@@ -1,6 +1,7 @@
 from index_reader import Index_reader
 from indexes_enum import Indexes, Index_types
 import json
+import numpy as np
 
 class Metadata_index:
     def __init__(self, path='index/'):
@@ -40,11 +41,11 @@ class Metadata_index:
         where : str
             The field to get the document lengths for.
         """
-        ans = 0
+        ans = []
         for doc in self.documents.values():
             if doc[where]:
-                ans += len(doc[where])
-        return ans
+                ans.append(len(doc[where]))
+        return np.mean(ans)
 
 
     def store_metadata_index(self, path):

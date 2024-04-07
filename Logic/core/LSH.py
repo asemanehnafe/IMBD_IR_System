@@ -70,7 +70,6 @@ class MinHashLSH:
             for shingle in shingles:
                 shingle_index = shingle_to_index[shingle]
                 characteristic_matrix[doc_index, shingle_index] = True
-
         return characteristic_matrix
 
     def min_hash_signature(self):
@@ -87,15 +86,16 @@ class MinHashLSH:
         num_docs = characteristic_matrix.shape[0]
         num_shingles = characteristic_matrix.shape[1]
         shingles = np.arange(num_shingles)
-        signatures = np.full((self.num_hashes, characteristic_matrix.shape[0]), np.inf)
+        signatures = np.full((self.num_hashes, num_docs), np.inf)
 
         for hash in range(self.num_hashes):
             random.shuffle(shingles)
             for doc in range(num_docs):
-                for i, shingle in enumerate(shingles):
-                    if(characteristic_matrix[doc, i] != 0):
+                for shingle in shingles:
+                    if(characteristic_matrix[doc, shingle]):
                         signatures[hash][doc] = min(shingle,  signatures[hash][doc])
 
+        #print(signatures)
         # characteristic_matrix = self.build_characteristic_matrix()
         # num_shingles = characteristic_matrix.shape[1]
         # hash_functions = np.random.randint(1, num_shingles * 10, size=(self.num_hashes, 2))
@@ -139,8 +139,8 @@ class MinHashLSH:
 
             for i, h in enumerate(hashes):
                 if h not in buckets:
-                    buckets[h] = []
-                buckets[h].append(i)
+                    buckets[h] = set()
+                buckets[h].add(i)
 
         return buckets
 
@@ -176,6 +176,7 @@ class MinHashLSH:
         intersection = len(first_set.intersection(second_set))
         union = len(first_set.union(second_set))
         return intersection / union if union != 0 else 0
+    
     def jaccard_similarity_test(self, buckets, all_documents):
         """
         Test your near duplicate detection code based on jaccard similarity.
@@ -239,11 +240,8 @@ def main():
             docs.append(" ".join(movie['summaries']))
         else:
             docs.append('')
-    m = MinHashLSH(docs, 80)
+    m = MinHashLSH(docs, 100)
     buckets = m.perform_lsh()
-    for b  in buckets.values():
-        if len(b) > 1:
-            print(b)
     m.jaccard_similarity_test(buckets, docs)
 if __name__ == '__main__':
     main()
