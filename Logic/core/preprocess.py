@@ -1,8 +1,9 @@
 import re
+from typing import List
 
 class Preprocessor:
 
-    def __init__(self, documents: list, stopwords_path = 'Logic/core/stopwords.txt'):
+    def __init__(self, documents, stopwords_path = 'Logic/core/stopwords.txt'):
         """
         Initialize the class.
 
@@ -13,24 +14,6 @@ class Preprocessor:
         """
         self.documents = documents
         self.stopwords = self.load_stopwords(stopwords_path)
-
-    def preprocess(self):
-        """
-        Preprocess the text using the methods in the class.
-
-        Returns
-        ----------
-        List[str]
-            The preprocessed documents.
-        """
-        preprocessed_documents = []
-        for doc in self.documents:
-            doc = self.remove_links(doc)
-            doc = self.remove_punctuations(doc)
-            doc = self.normalize(doc)
-            doc = self.remove_stopwords(doc)
-            preprocessed_documents.append(doc)
-        return preprocessed_documents
 
     def load_stopwords(self, stopwords_path: str):
         """
@@ -50,6 +33,64 @@ class Preprocessor:
             stopwords = set(file.read().splitlines())
         return stopwords
     
+    def preprocess(self):
+        """
+        Preprocess the text using the methods in the class.
+
+        Returns
+        ----------
+        List[str]
+            The preprocessed documents.
+        """
+        preprocessed_documents = []
+        for doc in self.documents:
+            if isinstance(doc, list):
+                doc = self.preprocess_doc(doc)
+            elif isinstance(doc, dict):
+                for field in doc:
+                    if isinstance(doc[field], str):
+                        doc[field] = self.preprocess_doc(doc[field])
+                    elif isinstance(doc[field], list):
+                        doc[field] = self.tmp(doc[field], field)
+            preprocessed_documents.append(doc)
+        return preprocessed_documents
+    
+    def tmp(self, val, field):
+        new_list = []
+        if field == 'reviews':
+            for a in val:
+                new_list.append(self.preprocess_list(a))
+        else:
+            new_list = self.preprocess_list(val)
+        return new_list
+
+    def preprocess_list(self, val): 
+        new_list= []
+        for a in val:
+            new_list.append(self.preprocess_doc(a))
+        return new_list
+
+        # if val== ['']:
+        #     return val
+        # if isinstance(val,  List[List[str]].__origin__):
+        #     new_list = []
+        #     for a in val:
+        #         new_list.append(self.preprocess_list(a))
+        #     return new_list
+        # if isinstance(val, List[str].__origin__):
+        #     new_list= []
+        #     for a in val:
+        #         new_list.append(self.preprocess_doc(a))
+        #     return new_list
+
+    
+    def preprocess_doc(self, doc):
+            doc = self.remove_links(doc)
+            doc = self.remove_punctuations(doc)
+            doc = self.normalize(doc)
+            doc = self.remove_stopwords(doc)
+            return doc
+
     def normalize(self, text: str):
         """
         Normalize the text by converting it to a lower case, stemming, lemmatization, etc.

@@ -1,72 +1,72 @@
 {
     "first_tier": {
-        "Action": {
+        "action": {
             "tt0082869": 1
         },
-        "Adventure": {
+        "adventure": {
             "tt16277242": 1
         },
-        "Drama": {
+        "drama": {
             "tt0067756": 1
         },
-        "Crime": {
+        "crime": {
             "tt0082869": 1
         },
-        "Western": {
+        "western": {
             "tt0015643": 1
         },
-        "Mystery": {
+        "mystery": {
             "tt0066769": 1
         },
-        "Fantasy": {
+        "fantasy": {
             "tt0354899": 1
         },
-        "Biography": {
+        "biography": {
             "tt1817287": 1
         },
-        "History": {
+        "history": {
             "tt5535276": 1
         },
-        "Sci-Fi": {
+        "scifi": {
             "tt0067756": 1
         },
-        "Romance": {
+        "romance": {
             "tt8955272": 1
         },
-        "Family": {
+        "family": {
             "tt2953050": 1
         },
-        "Comedy": {
+        "comedy": {
             "tt7375404": 1
         },
-        "Thriller": {
+        "thriller": {
             "tt0066769": 1
         },
-        "Animation": {
+        "animation": {
             "tt1817287": 1
         },
-        "War": {
+        "war": {
             "tt0096548": 1
         },
-        "Music": {
+        "music": {
             "tt3783958": 1
         },
-        "Horror": {
+        "horror": {
             "tt5109784": 1
         },
-        "Film-Noir": {
+        "filmnoir": {
             "tt0041699": 1
         },
-        "Musical": {
+        "musical": {
             "tt0314676": 1
         },
-        "Sport": {
+        "sport": {
             "tt1125849": 1
         },
-        "Short": {
+        "short": {
             "tt8955272": 1
         },
-        "Documentary": {
+        "documentary": {
             "tt1817287": 1
         }
     },

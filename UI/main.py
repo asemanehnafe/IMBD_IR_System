@@ -55,7 +55,7 @@ def search_handling(
     if search_button:
         corrected_query = utils.correct_text(search_term, utils.all_movies_string)
 
-        if corrected_query != search_term:
+        if corrected_query.lower() != search_term.lower():
             st.warning(f"Your search terms were corrected to: {corrected_query}")
             search_term = corrected_query
 

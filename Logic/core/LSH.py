@@ -95,7 +95,6 @@ class MinHashLSH:
                     if(characteristic_matrix[doc, shingle]):
                         signatures[hash][doc] = min(shingle,  signatures[hash][doc])
 
-        #print(signatures)
         # characteristic_matrix = self.build_characteristic_matrix()
         # num_shingles = characteristic_matrix.shape[1]
         # hash_functions = np.random.randint(1, num_shingles * 10, size=(self.num_hashes, 2))
@@ -107,7 +106,7 @@ class MinHashLSH:
         #         shinge_hash = (hash_a * i + hash_b) % num_shingles
         #         shingle_col = characteristic_matrix[:, i]
         #         for doc_id, exists in enumerate(shingle_col):
-        #             if (exists==1 and signatures[j][doc_id]> shinge_hash):
+        #             if (exists and signatures[j][doc_id]> shinge_hash):
         #                 signatures[j][doc_id] = shinge_hash
 
         return signatures
@@ -232,16 +231,20 @@ def read_from_file_as_json(path):
 
 def main():
     fake_movies = read_from_file_as_json('logic/core/LSHFakeData.json')
-    crawled_movies = read_from_file_as_json('./IMDB_crawled.json')
-    all_movies = fake_movies
+    crawled_movies = read_from_file_as_json('./IMDB_sample_crawled.json')
+    all_movies = crawled_movies + fake_movies
     docs = []
     for movie in all_movies:
         if movie['summaries']:
             docs.append(" ".join(movie['summaries']))
         else:
             docs.append('')
-    m = MinHashLSH(docs, 100)
+    m = MinHashLSH(docs, 10)
     buckets = m.perform_lsh()
+    # for _,b in buckets.items():
+    #     if len(b) > 1:
+    #         print(b)
+    #print(buckets)
     m.jaccard_similarity_test(buckets, docs)
 if __name__ == '__main__':
     main()

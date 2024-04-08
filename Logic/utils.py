@@ -11,11 +11,20 @@ def load_dataset():
     
 def get_all_doc_string():
     all_doc_string = []
-    #TODO: use preprocessed 
     for movie in movies_dataset:
-            all_doc_string.append('  '.join(star for star in movie['stars']))
-            all_doc_string.append('  '.join(star for star in movie['genres']))
-            all_doc_string.append('  '.join(star for star in movie['summaries']))
+        for field in movie:
+            if isinstance(movie[field], str):
+                all_doc_string.append('  '.join(star.lower() for star in movie[field]))
+            elif field != 'reviews':
+                all_doc_string.append('  '.join(star.lower() for star in movie[field]))
+            else:
+                for review in  movie[field]:
+                    all_doc_string.append('  '.join(star.lower() for star in review))
+
+    # for movie in movies_dataset:
+    #         all_doc_string.append('  '.join(star for star in movie['stars']))
+    #         all_doc_string.append('  '.join(star for star in movie['genres']))
+    #         all_doc_string.append('  '.join(star for star in movie['summaries']))
     return all_doc_string
 
 movies_dataset = load_dataset()

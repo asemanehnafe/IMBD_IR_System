@@ -2,9 +2,12 @@ import time
 import os
 import json
 import copy
-from indexes_enum import Indexes
+from .indexes_enum import Indexes
 import collections
+import sys
+sys.path.append('d:\\dars\\MIR project 2024\\IMBD_IR_System')
 
+from Logic.core.preprocess import Preprocessor
 class Index:
     def __init__(self, preprocessed_documents: list):
         """
@@ -259,7 +262,8 @@ class Index:
                 filename = os.path.join(path, f"{index_name.value}_index.json")
                 if os.path.isfile(filename):
                     with open(filename, "r") as f:
-                        print(indexer.check_if_index_loaded_correctly(index_name.value, indexer.index[index_name.value] ))
+                        ind = json.load(f)
+                        print(self.check_if_index_loaded_correctly(index_name.value, ind ))
 
     def check_if_index_loaded_correctly(self, index_name: str, loaded_index: dict):
         """
@@ -342,13 +346,16 @@ class Index:
             return False
 
 # TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
-with open('IMDB_crawled.json', 'r') as f:
-    movies = json.load(f)
-indexer = Index(movies)
-indexer.store_index('./index', Indexes.DOCUMENTS.value)
-indexer.store_index('./index', Indexes.STARS.value)
-indexer.store_index('./index', Indexes.GENRES.value)
-indexer.store_index('./index', Indexes.SUMMARIES.value)
-indexer.check_add_remove_is_correct()
-indexer.load_index('./index')
-indexer.check_if_indexing_is_good(Indexes.SUMMARIES)
+if __name__ == "__main__":
+    with open('IMDB_crawled.json', 'r') as f:
+        movies = json.load(f)
+    preprocessor = Preprocessor(movies)
+    movies = preprocessor.preprocess()
+    indexer = Index(movies)
+    indexer.store_index('./index', Indexes.DOCUMENTS.value)
+    indexer.store_index('./index', Indexes.STARS.value)
+    indexer.store_index('./index', Indexes.GENRES.value)
+    indexer.store_index('./index', Indexes.SUMMARIES.value)
+    indexer.check_add_remove_is_correct()
+    indexer.load_index('./index')
+    indexer.check_if_indexing_is_good(Indexes.SUMMARIES)

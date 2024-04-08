@@ -77,7 +77,9 @@ class Snippet:
             snippet_words = doc_words[start_index:end_index]
 
             # Highlight the query word in the snippet
-            snippet_words[snippet_words.index(query_word)] = f"***{query_word}***"
+            for i, word in enumerate(snippet_words):
+                if word.lower() == query_word.lower():
+                    snippet_words[i] = f"***{query_word}***"
 
             # Concatenate the snippet words
             snippet = " ".join(snippet_words)
