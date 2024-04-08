@@ -44,7 +44,7 @@ class Preprocessor:
         """
         preprocessed_documents = []
         for doc in self.documents:
-            if isinstance(doc, list):
+            if isinstance(doc, str):
                 doc = self.preprocess_doc(doc)
             elif isinstance(doc, dict):
                 for field in doc:

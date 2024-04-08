@@ -58,6 +58,7 @@ def search(
     max_result_count: int,
     method: str = "ltn-lnn",
     weights: list = [0.3, 0.3, 0.4],
+    safe_method: str = 'safe',
     should_print=False,
     preferred_genre: str = None,
 ):
@@ -89,8 +90,12 @@ def search(
         Indexes.GENRES: weights[1],
         Indexes.SUMMARIES: weights[2]
     }
+    safe_ranking = False
+    if (safe_method == 'safe'):
+        safe_ranking = True
+    
     return search_engine.search(
-        query, method, weights, max_results=max_result_count, safe_ranking=True
+        query, method, weights, max_results=max_result_count, safe_ranking=safe_ranking
     )
 
 

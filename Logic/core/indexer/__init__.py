@@ -23,7 +23,6 @@
 # tiered = Tiered_index(
 #     path="index/"
 # )
-
 # meta_index = Metadata_index()
 # document_lengths_index = DocumentLengthsIndex()
 # print('Document lengths index stored successfully.')

@@ -5,6 +5,7 @@ import wandb
 class Evaluation:
 
     def __init__(self, name: str):
+            wandb.init('IMBD_IR_System', 'Asemaeneh')
             self.name = name
     def precision_by_quary(self, actual: List[str], predicted: List[str]):
         precision = 0.0
@@ -34,13 +35,13 @@ class Evaluation:
             The precision of the predicted results
         """
         #TODO: flat or mean?
-        # precision = []   
-        # for i, query in enumerate(predicted):
-        #     precision.append(self.precision_by_quary(actual[i], query))
-        # return np.mean(precision)
-        flat_actual = [item for sublist in actual for item in sublist]
-        flat_predicted = [item for sublist in predicted for item in sublist]
-        return self.precision_by_quary(flat_actual, flat_predicted)
+        precision = []   
+        for i, query in enumerate(predicted):
+            precision.append(self.precision_by_quary(actual[i], query))
+        return np.mean(precision)
+        # flat_actual = [item for sublist in actual for item in sublist]
+        # flat_predicted = [item for sublist in predicted for item in sublist]
+        # return self.precision_by_quary(flat_actual, flat_predicted)
         
     def recal_by_quary(self, actual: List[str], predicted: List[str]):
         recall = 0.0
@@ -71,13 +72,13 @@ class Evaluation:
         float
             The recall of the predicted results
         """
-        # recals = []   
-        # for i, query in enumerate(predicted):
-        #     recals.append(self.recal_by_quary(actual[i], query))
-        # return np.mean(recals)    
-        flat_actual = [item for sublist in actual for item in sublist]
-        flat_predicted = [item for sublist in predicted for item in sublist]
-        return self.recal_by_quary(flat_actual, flat_predicted)
+        recals = []   
+        for i, query in enumerate(predicted):
+            recals.append(self.recal_by_quary(actual[i], query))
+        return np.mean(recals)    
+        # flat_actual = [item for sublist in actual for item in sublist]
+        # flat_predicted = [item for sublist in predicted for item in sublist]
+        # return self.recal_by_quary(flat_actual, flat_predicted)
     
     def calculate_F1(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
@@ -179,7 +180,7 @@ class Evaluation:
         """
         flat_actual = [item for sublist in actual for item in sublist]
         flat_predicted = [item for sublist in predicted for item in sublist]
-        return self.DG_by_quary(flat_actual, flat_predicted)
+        return self.DCG_by_quary(flat_actual, flat_predicted)
     
     def cacluate_NDCG(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
         """
@@ -358,12 +359,13 @@ class Evaluation:
         map_score = self.calculate_MAP(actual, predicted)
         dcg = self.calculate_DCG(actual, predicted)
         ndcg = self.cacluate_NDCG(actual, predicted)
-        rr = self.cacluate_RR(actual, predicted)
+        rr = self.calculate_RR(actual, predicted)
         mrr = self.cacluate_MRR(actual, predicted)
 
         #call print and viualize functions
         self.print_evaluation(precision, recall, f1, ap, map_score, dcg, ndcg, rr, mrr)
-        self.log_evaluation(precision, recall, f1, ap, map_score, dcg, ndcg, rr, mrr)
+        #self.log_evaluation(precision, recall, f1, ap, map_score, dcg, ndcg, rr, mrr)
 
 
-
+eval = Evaluation('test')
+eval.calculate_evaluation([['batman','the batman']],[['dark knight','batman']])

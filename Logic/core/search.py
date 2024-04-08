@@ -52,7 +52,8 @@ class SearchEngine:
         list
             A list of tuples containing the document IDs and their scores sorted by their scores.
         """
-
+        print(safe_ranking)
+        print(method)
         preprocessor = Preprocessor([query])
         query = preprocessor.preprocess()[0].split()
 
@@ -117,9 +118,10 @@ class SearchEngine:
                 if(method == 'OkapiBM25'):
                     adl = self.metadata_index["averge_document_length"][field.value]
                     dls = self.document_lengths_index[field]
-                    scores[field].update(scorer.compute_socres_with_okapi_bm25(query, adl, dls))
+                    ans = scorer.compute_socres_with_okapi_bm25(query, adl, dls)
                 else:
-                    scores[field].update(scorer.compute_scores_with_vector_space_model(query, method))
+                    ans = scorer.compute_scores_with_vector_space_model(query, method)
+                scores[field] = self.merge_scores(ans, scores[field])
                 if max_results != -1 and (len(scores[field])) > max_results:
                     break              
 
@@ -165,7 +167,13 @@ class SearchEngine:
         dict
             The merged dictionary of scores.
         """
-        pass
+        ans = {}
+        for doc, score in scores1.items():
+            ans[doc] = score + ans.get(doc, 0)
+        for doc, score in scores2.items():
+            ans[doc] = score + ans.get(doc, 0)
+    
+        return ans
 
 
 if __name__ == '__main__':

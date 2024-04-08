@@ -309,7 +309,7 @@ class Index:
             if index_type not in document or document[index_type] is None:
                 continue
 
-            for field in document[index_type]:
+            for field in document[index_type].split():
                 if check_word in field:
                     docs.append(document['id'])
                     break

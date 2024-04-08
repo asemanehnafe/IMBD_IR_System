@@ -51,6 +51,7 @@ def search_handling(
     search_max_num,
     search_weights,
     search_method,
+    safe_method,
 ):
     if search_button:
         corrected_query = utils.correct_text(search_term, utils.all_movies_string)
@@ -67,6 +68,7 @@ def search_handling(
                 search_max_num,
                 search_method,
                 search_weights,
+                safe_method
             )
             print(f"Result: {result}")
             end_time = time.time()
@@ -160,6 +162,11 @@ def main():
             "Search method",
             ("ltn.lnn", "ltc.lnc", "OkapiBM25"),
         )
+        
+        safe_method = st.selectbox(
+            "safe/unsafe",
+            ("safe", "unsafe"),
+        )
 
     search_button = st.button("Search!")
 
@@ -169,6 +176,7 @@ def main():
         search_max_num,
         search_weights,
         search_method,
+        safe_method,
     )
 
 
