@@ -52,8 +52,6 @@ class SearchEngine:
         list
             A list of tuples containing the document IDs and their scores sorted by their scores.
         """
-        print(safe_ranking)
-        print(method)
         preprocessor = Preprocessor([query])
         query = preprocessor.preprocess()[0].split()
 

@@ -44,7 +44,11 @@ class Metadata_index:
         ans = []
         for doc in self.documents.values():
             if doc[where]:
-                ans.append(len(doc[where]))
+                dl = 0
+                for x in doc[where]:
+                    for y in x.split():
+                        dl += 1
+                ans.append(dl)
         return np.mean(ans)
 
 
