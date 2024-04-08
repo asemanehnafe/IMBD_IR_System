@@ -159,7 +159,10 @@ class Evaluation:
         DCG = 0.0
         for i, item in enumerate(predicted):
             if item in actual:
-                DCG += 1 / np.log2(i + 2)
+                if(i == 0):
+                    DCG += 1
+                else:
+                    DCG += 1 / np.log2(i + 1)
         return DCG
     
     def calculate_DCG(self, actual: List[List[str]], predicted: List[List[str]]) -> float:
