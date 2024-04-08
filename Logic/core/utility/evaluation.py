@@ -5,7 +5,7 @@ import wandb
 class Evaluation:
 
     def __init__(self, name: str):
-            wandb.init('IMBD_IR_System', 'Asemaeneh')
+            # wandb.init('IMBD_IR_System', 'Asemaeneh')
             self.name = name
     def precision_by_quary(self, actual: List[str], predicted: List[str]):
         precision = 0.0
@@ -198,16 +198,15 @@ class Evaluation:
         float
             The NDCG of the predicted results
         """
-        NDCG = 0.0
-        flat_actual = [item for sublist in actual for item in sublist]
-        flat_predicted = [item for sublist in predicted for item in sublist]
-        DCG = self.DCG_by_quary(flat_actual, flat_predicted)
-        ideal_DCG =  self.DCG_by_quary(flat_predicted, flat_actual)
-        if ideal_DCG == 0:
-            return 0.0
-        NDCG = DCG / ideal_DCG
-        return NDCG
-    
+        NDCGs = []
+        for i, query in enumerate(predicted):
+            DCG = self.DCG_by_quary(actual[i], query)
+            ideal_DCG =  self.DCG_by_quary(actual[i], actual[i])
+            if ideal_DCG == 0:
+                NDCGs.append(0.0)
+            NDCGs.append(DCG / ideal_DCG)            
+        return np.mean(NDCGs)
+        
     def RR_by_quary(self, actual: List[str], predicted: List[str]) -> float:
         RR = 0.0
         for i,predict in enumerate(predicted):
@@ -261,7 +260,7 @@ class Evaluation:
         return np.mean(MRRs)   
     
 
-    def print_evaluation(self, precision, recall, f1, ap, map, dcg, ndcg, rr, mrr):
+    def print_evaluation(self,precision, recall, f1, map, ndcg, mrr):
         """
         Prints the evaluation metrics
 
@@ -291,15 +290,15 @@ class Evaluation:
         print(f"Precision: {precision}")
         print(f"Recall: {recall}")
         print(f"F1 Score: {f1}")
-        print(f"Average Precision: {ap}")
+        #print(f"Average Precision: {ap}")
         print(f"Mean Average Precision: {map}")
-        print(f"Discounted Cumulative Gain: {dcg}")
+        #print(f"Discounted Cumulative Gain: {dcg}")
         print(f"Normalized Discounted Cumulative Gain: {ndcg}")
-        print(f"Reciprocal Rank: {rr}")
+        #print(f"Reciprocal Rank: {rr}")
         print(f"Mean Reciprocal Rank: {mrr}")
       
 
-    def log_evaluation(self, precision, recall, f1, ap, map, dcg, ndcg, rr, mrr):
+    def log_evaluation(self,precision, recall, f1, map, ndcg, mrr):
         """
         Use Wandb to log the evaluation metrics
       
@@ -331,11 +330,11 @@ class Evaluation:
         "Precision": precision,
         "Recall": recall,
         "F1 Score": f1,
-        "Average Precision": ap,
+        #"Average Precision": ap,
         "Mean Average Precision": map,
-        "Discounted Cumulative Gain": dcg,
+        #"Discounted Cumulative Gain": dcg,
         "Normalized Discounted Cumulative Gain": ndcg,
-        "Reciprocal Rank": rr,
+        #"Reciprocal Rank": rr,
         "Mean Reciprocal Rank": mrr
         })
 
@@ -355,16 +354,16 @@ class Evaluation:
         precision = self.calculate_precision(actual, predicted)
         recall = self.calculate_recall(actual, predicted)
         f1 = self.calculate_F1(actual, predicted)
-        ap = self.calculate_AP(actual, predicted)
+        #ap = self.calculate_AP(actual, predicted)
         map_score = self.calculate_MAP(actual, predicted)
-        dcg = self.calculate_DCG(actual, predicted)
+        #dcg = self.calculate_DCG(actual, predicted)
         ndcg = self.cacluate_NDCG(actual, predicted)
-        rr = self.calculate_RR(actual, predicted)
+        #rr = self.calculate_RR(actual, predicted)
         mrr = self.cacluate_MRR(actual, predicted)
 
         #call print and viualize functions
-        self.print_evaluation(precision, recall, f1, ap, map_score, dcg, ndcg, rr, mrr)
-        #self.log_evaluation(precision, recall, f1, ap, map_score, dcg, ndcg, rr, mrr)
+        self.print_evaluation(precision, recall, f1, map_score, ndcg, mrr)
+        #self.log_evaluation(precision, recall, f1, map_score, ndcg, mrr)
 
 
 eval = Evaluation('test')

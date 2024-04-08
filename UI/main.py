@@ -70,7 +70,7 @@ def search_handling(
                 search_weights,
                 safe_method
             )
-            print(f"Result: {result}")
+            #print(f"Result: {result}")
             end_time = time.time()
             if len(result) == 0:
                 st.warning("No results found!")
