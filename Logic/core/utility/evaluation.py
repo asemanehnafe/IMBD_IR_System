@@ -5,7 +5,7 @@ import wandb
 class Evaluation:
 
     def __init__(self, name: str):
-            # wandb.init('IMBD_IR_System', 'Asemaeneh')
+            wandb.init('IMBD_IR_System')
             self.name = name
     def precision_by_quary(self, actual: List[str], predicted: List[str]):
         precision = 0.0
