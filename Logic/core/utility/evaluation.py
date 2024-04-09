@@ -366,7 +366,7 @@ class Evaluation:
 
         #call print and viualize functions
         self.print_evaluation(precision, recall, f1, map_score, ndcg, mrr)
-        #self.log_evaluation(precision, recall, f1, map_score, ndcg, mrr)
+        self.log_evaluation(precision, recall, f1, map_score, ndcg, mrr)
 
 
 eval = Evaluation('test')
