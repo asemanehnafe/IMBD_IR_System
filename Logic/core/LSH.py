@@ -19,6 +19,12 @@ class MinHashLSH:
         self.documents = documents
         self.num_hashes = num_hashes
 
+    def get_hash(slef, hash, string):
+        for char in string:
+            char = ord(char)
+            hash = char + (hash << 6 ) + (hash << 16) - hash
+        return hash % pow(2, 32)
+    
     def shingle_document(self, document, k=2):
         """
         Convert a document into a set of shingles.
@@ -71,7 +77,7 @@ class MinHashLSH:
                 shingle_index = shingle_to_index[shingle]
                 characteristic_matrix[doc_index, shingle_index] = True
         return characteristic_matrix
-
+    
     def min_hash_signature(self):
         """
         Perform Min-Hashing to generate hash signatures for documents.
@@ -81,38 +87,20 @@ class MinHashLSH:
         numpy.ndarray
             The Min-Hash signatures matrix.
         """
-        #with permutation 
-        characteristic_matrix = self.build_characteristic_matrix()
-        num_docs = characteristic_matrix.shape[0]
-        num_shingles = characteristic_matrix.shape[1]
-        shingles = np.arange(num_shingles)
-        signatures = np.full((self.num_hashes, num_docs), np.inf)
 
-        for hash in range(self.num_hashes):
-            random.shuffle(shingles)
-            for doc in range(num_docs):
-                for shingle in shingles:
-                    if(characteristic_matrix[doc, shingle]):
-                        signatures[hash][doc] = min(shingle,  signatures[hash][doc])
-
-        #print(signatures)
-        # characteristic_matrix = self.build_characteristic_matrix()
-        # num_shingles = characteristic_matrix.shape[1]
-        # hash_functions = np.random.randint(1, num_shingles * 10, size=(self.num_hashes, 2))
-        # signatures = np.full((self.num_hashes, characteristic_matrix.shape[0]), np.inf)
-
-        # for j in range(self.num_hashes):
-        #     hash_a, hash_b = hash_functions[j]
-        #     for i in range(num_shingles):
-        #         shinge_hash = (hash_a * i + hash_b) % num_shingles
-        #         shingle_col = characteristic_matrix[:, i]
-        #         for doc_id, exists in enumerate(shingle_col):
-        #             if (exists==1 and signatures[j][doc_id]> shinge_hash):
-        #                 signatures[j][doc_id] = shinge_hash
-
+        signatures = np.full((self.num_hashes, len(self.documents)), np.inf)
+        seeds = []
+        for i in range(self.num_hashes):
+            seeds.append(random.randint(0, pow(2,32)))
+        for i, seed in enumerate(seeds):
+            for j, doc in enumerate(self.documents):
+                for shingle in self.shingle_document(doc):
+                    hash_value =  self.get_hash(seed, shingle)
+                    if  signatures[i][j] > hash_value:
+                        signatures[i][j] = hash_value
         return signatures
 
-    def lsh_buckets(self, signature, bands=10, rows_per_band=10):
+    def lsh_buckets(self, signature, bands=25, rows_per_band=4):
         """
         Group documents into Locality-Sensitive Hashing (LSH) buckets based on Min-Hash signatures.
 
@@ -224,6 +212,8 @@ class MinHashLSH:
 
         # a good score is around 0.8
         print("your final score in near duplicate detection:", correct_near_duplicates / all_near_duplicates)
+        print(correct_near_duplicates, all_near_duplicates)
+
 
 def read_from_file_as_json(path):
     with open(path, 'r') as f:
@@ -233,13 +223,11 @@ def read_from_file_as_json(path):
 def main():
     fake_movies = read_from_file_as_json('logic/core/LSHFakeData.json')
     crawled_movies = read_from_file_as_json('./IMDB_crawled.json')
-    all_movies = fake_movies
+    all_movies = fake_movies + crawled_movies
     docs = []
     for movie in all_movies:
-        if movie['summaries']:
+        if movie['summaries'] != ['']:
             docs.append(" ".join(movie['summaries']))
-        else:
-            docs.append('')
     m = MinHashLSH(docs, 100)
     buckets = m.perform_lsh()
     m.jaccard_similarity_test(buckets, docs)

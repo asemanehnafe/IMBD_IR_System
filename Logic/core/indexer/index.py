@@ -309,10 +309,11 @@ class Index:
             if index_type not in document or document[index_type] is None:
                 continue
 
-            for field in document[index_type].split():
-                if check_word in field:
-                    docs.append(document['id'])
-                    break
+            for field in document[index_type]:
+                for name in field:
+                    if check_word in name.split():
+                        docs.append(document['id'])
+                        break
 
             # if we have found 3 documents with the word, we can break
             if len(docs) == 3:
@@ -358,4 +359,9 @@ if __name__ == "__main__":
     indexer.store_index('./index', Indexes.SUMMARIES.value)
     indexer.check_add_remove_is_correct()
     indexer.load_index('./index')
-    indexer.check_if_indexing_is_good(Indexes.SUMMARIES)
+    indexer.check_if_indexing_is_good(Indexes.SUMMARIES.value)
+    indexer.check_if_indexing_is_good(Indexes.STARS.value)
+    indexer.check_if_indexing_is_good(Indexes.GENRES.value)
+    indexer.check_if_indexing_is_good(Indexes.DOCUMENTS.value)
+
+
