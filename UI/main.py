@@ -26,7 +26,7 @@ class color(Enum):
 
 
 def get_top_x_movies_by_rank(x: int, results: list):
-    path = "../Logic/core/index/"  # Link to the index folder
+    path = "./index"  # Link to the index folder
     document_index = Index_reader(path, Indexes.DOCUMENTS)
     corpus = []
     root_set = []
@@ -147,9 +147,9 @@ def search_handling(
                 search_method,
                 search_weights,
                 safe_method,
-                unigram_smoothing=unigram_smoothing,
-                alpha=alpha,
-                lamda=lamda,
+                unigram_smoothing,
+                alpha,
+                lamda,
             )
             if "search_results" in st.session_state:
                 st.session_state["search_results"] = result
@@ -251,6 +251,9 @@ def main():
         search_method = st.selectbox(
             "Search method", ("ltn.lnn", "ltc.lnc", "OkapiBM25", "unigram")
         )
+        safe_method = st.selectbox(
+            "safe/unsafe",("safe", "unsafe"),
+        )
 
         unigram_smoothing = None
         alpha, lamda = None, None
@@ -295,13 +298,13 @@ def main():
         search_max_num,
         search_weights,
         search_method,
+        safe_method,
         unigram_smoothing,
         alpha,
         lamda,
         filter_button,
         slider_,
     )
-
 
 if __name__ == "__main__":
     main()

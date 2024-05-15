@@ -1,5 +1,5 @@
 import numpy as np
-
+import numpy
 class Scorer:    
     def __init__(self, index, number_of_documents):
         """
@@ -247,10 +247,15 @@ class Scorer:
             A dictionary of the document IDs and their scores.
         """
 
-        # TODO
-        pass
+        scores = {}
+        for document_id in document_lengths:
+            score = self.get_unigram_model_score(
+                query, document_id, smoothing_method, document_lengths, alpha, lamda
+            )
+            scores[document_id] = score
+        return scores
 
-    def compute_score_with_unigram_model(
+    def get_unigram_model_score(
         self, query, document_id, smoothing_method, document_lengths, alpha, lamda
     ):
         """
@@ -277,7 +282,51 @@ class Scorer:
         -------
         float
             The Unigram score of the document for the query.
-        """
+        """        
+        document_score = 0
+        for term in query:
+            tf = self.index.get(term, {}).get(document_id, 0)
+            cf = sum(self.index.get(term, {}).values()) / sum(document_lengths.values())
+            term_prob = self.compute_term_probability(tf, smoothing_method, alpha, lamda, document_lengths[document_id], cf)
+            document_score += np.log(term_prob)
+        return document_score
 
-        # TODO
-        pass
+    def compute_term_probability(self, tf, smoothing_method, alpha, lamda, document_lenght, cf):
+            """
+            Computes the probability of a term occurring in the document based on the unigram model.
+
+            Parameters
+            ----------
+            tf : int
+                The term frequency in the document.
+            idf : float
+                The inverse document frequency of the term.
+            smoothing_method : str (bayes | naive | mixture)
+                The method used for smoothing the probabilities in the unigram model.
+            alpha : float
+                The parameter used in bayesian smoothing method.
+            lamda : float
+                The parameter used in some smoothing methods to balance between the document
+                probability and the collection probability.
+
+            Returns
+            -------
+            float
+                The probability of the term occurring in the document.
+            """
+            if smoothing_method == "bayes":
+                # Implement Bayesian smoothing logic
+                prob = (tf + alpha * cf * alpha) / (document_lenght + alpha)
+            elif smoothing_method == "naive":
+                # Implement Naive smoothing logic
+                M = len(self.index)
+                prob = (tf + 1/ M) / (document_lenght + 1)
+            elif smoothing_method == "mixture":
+                # Implement Mixture smoothing logic
+                prob = 0
+                if document_lenght != 0:
+                    prob = (1 - lamda) * cf + lamda * (tf / document_lenght)
+            else:
+                raise ValueError("Invalid smoothing method")
+            
+            return prob

@@ -1,7 +1,7 @@
 from typing import Dict, List
 from .core.search import SearchEngine
-from .core.spell_correction import SpellCorrection
-from .core.snippet import Snippet
+from .core.utility.spell_correction import SpellCorrection
+from .core.utility.snippet import Snippet
 from .core.indexer.indexes_enum import Indexes, Index_types
 import json
 
@@ -59,8 +59,9 @@ def search(
     method: str = "ltn-lnn",
     weights: list = [0.3, 0.3, 0.4],
     safe_method: str = 'safe',
-    should_print=False,
-    preferred_genre: str = None,
+    smoothing_method=None,
+    alpha: int=0.5,
+    lamda: int=0.5,
 ):
     """
     Finds relevant documents to query
@@ -98,9 +99,8 @@ def search(
     safe_ranking = False
     if (safe_method == 'safe'):
         safe_ranking = True
-    
     return search_engine.search(
-        query, method, weights, max_results=max_result_count, safe_ranking=safe_ranking
+        query, method, weights, safe_ranking, max_result_count, smoothing_method, alpha, lamda
     )
 
 
@@ -126,11 +126,11 @@ def get_movie_by_id(id: str, movies_dataset: List[Dict[str, str]]) -> Dict[str, 
         if movie.get("id") == id:
             result = movie
 
-    # result["Image_URL"] = (
-    #     "https://m.media-amazon.com/images/M/MV5BNDE3ODcxYzMtY2YzZC00NmNlLWJiNDMtZDViZWM2MzIxZDYwXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg"  # a default picture for selected movies
-    # )
-    # result["URL"] = (
-    #     f"https://www.imdb.com/title/{result['id']}"  # The url pattern of IMDb movies
-    # )
-    # return result
-    return None
+    result["Image_URL"] = (
+        "https://m.media-amazon.com/images/M/MV5BNDE3ODcxYzMtY2YzZC00NmNlLWJiNDMtZDViZWM2MzIxZDYwXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg"  # a default picture for selected movies
+    )
+    result["URL"] = (
+        f"https://www.imdb.com/title/{result['id']}"  # The url pattern of IMDb movies
+    )
+    return result
+

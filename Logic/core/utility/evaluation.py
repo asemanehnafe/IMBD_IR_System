@@ -5,7 +5,7 @@ import wandb
 class Evaluation:
 
     def __init__(self, name: str):
-            wandb.init('IMBD_IR_System')
+            # wandb.init('IMBD_IR_System')
             self.name = name
     def precision_by_quary(self, actual: List[str], predicted: List[str]):
         precision = 0.0
@@ -369,5 +369,5 @@ class Evaluation:
         self.log_evaluation(precision, recall, f1, map_score, ndcg, mrr)
 
 
-eval = Evaluation('test')
-eval.calculate_evaluation([['batman','the batman']],[['dark knight','batman']])
+# eval = Evaluation('test')
+# eval.calculate_evaluation([['batman','the batman']],[['dark knight','batman']])

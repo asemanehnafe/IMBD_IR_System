@@ -6,8 +6,8 @@ from .indexes_enum import Indexes
 import collections
 import sys
 sys.path.append('d:\\dars\\MIR project 2024\\IMBD_IR_System')
+from Logic.core.utility.preprocess import Preprocessor
 
-from Logic.core.preprocess import Preprocessor
 class Index:
     def __init__(self, preprocessed_documents: list):
         """

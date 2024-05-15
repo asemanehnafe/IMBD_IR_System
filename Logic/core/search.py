@@ -1,7 +1,7 @@
 import json
 import numpy as np
-from .preprocess import Preprocessor
-from .scorer import Scorer
+from .utility.preprocess import Preprocessor
+from .utility.scorer import Scorer
 from .indexer.indexes_enum import Indexes, Index_types
 from .indexer.index_reader import Index_reader
 
@@ -193,8 +193,12 @@ class SearchEngine:
             The parameter used in some smoothing methods to balance between the document
             probability and the collection probability. Defaults to 0.5.
         """
-        # TODO
-        pass
+        for field in weights:
+            scores[field] = {}
+            scorer = Scorer(self.document_indexes[field], self.metadata_index['document_count'])
+            dls = self.document_lengths_index[field]
+            scores[field].update(scorer.compute_scores_with_unigram_model(
+                query, smoothing_method, dls, alpha, lamda))
 
     def merge_scores(self, scores1, scores2):
         """

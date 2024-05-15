@@ -3,7 +3,7 @@ from typing import List
 
 class Preprocessor:
 
-    def __init__(self, documents, stopwords_path = 'Logic/core/stopwords.txt'):
+    def __init__(self, documents, stopwords_path = 'Logic/core/utility/stopwords.txt'):
         """
         Initialize the class.
 

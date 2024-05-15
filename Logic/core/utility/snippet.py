@@ -26,7 +26,7 @@ class Snippet:
         """
 
         # Remove stop words from the query
-        stopwords_path = 'Logic/core/stopwords.txt'
+        stopwords_path = 'Logic/core/utility/stopwords.txt'
         with open(stopwords_path, 'r') as file:
             stop_words = set(file.read().splitlines())
         query_words = query.split()
