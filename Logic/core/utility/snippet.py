@@ -92,5 +92,5 @@ class Snippet:
 
         return final_snippet, not_exist_words
 
-snippet = Snippet()
-print(snippet.find_snippet('hello, I am Asemaneh the king of the Iran','Asemaneh the king this'))
+# snippet = Snippet()
+# print(snippet.find_snippet('hello, I am Asemaneh the king of the Iran','Asemaneh the king this'))

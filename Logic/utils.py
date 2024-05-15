@@ -103,7 +103,6 @@ def search(
         query, method, weights, safe_ranking, max_result_count, smoothing_method, alpha, lamda
     )
 
-
 def get_movie_by_id(id: str, movies_dataset: List[Dict[str, str]]) -> Dict[str, str]:
     """
     Get movie by its id
@@ -133,4 +132,3 @@ def get_movie_by_id(id: str, movies_dataset: List[Dict[str, str]]) -> Dict[str, 
         f"https://www.imdb.com/title/{result['id']}"  # The url pattern of IMDb movies
     )
     return result
-
