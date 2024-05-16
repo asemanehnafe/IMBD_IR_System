@@ -1,6 +1,7 @@
-from .graph import LinkGraph
-from ..indexer.indexes_enum import Indexes
-from ..indexer.index_reader import Index_reader
+from graph import LinkGraph
+import networkx as nx
+import json
+import random
 
 class LinkAnalyzer:
     def __init__(self, root_set):
@@ -30,8 +31,15 @@ class LinkAnalyzer:
         This function has no parameters. You can use self to get or change attributes
         """
         for movie in self.root_set:
-            #TODO
-            pass
+            # Add movie node to the graph
+            self.graph.add_node(movie["title"])
+            # Add edges between movie and its stars
+            for star in movie["stars"]:
+                self.graph.add_edge(movie["title"], star)
+                # Add star to the list of hubs
+                self.hubs.append(star)
+            # Add movie to the list of authorities
+            self.authorities.append(movie["title"])
 
     def expand_graph(self, corpus):
         """
@@ -50,8 +58,17 @@ class LinkAnalyzer:
         and refer to the nodes in the root set to the graph and to the list of hubs and authorities.
         """
         for movie in corpus:
-            #TODO
-            pass
+            # Add movie node to the graph if not already present
+            self.graph.add_node(movie["title"])
+            # Add edges between movie and its stars
+            for star in movie["stars"]:
+                self.graph.add_edge(movie["title"], star)
+                # Add star to the list of hubs if not already present
+                if star not in self.hubs:
+                    self.hubs.append(star)
+            # Add movie to the list of authorities if not already present
+            if movie["title"] not in self.authorities:
+                self.authorities.append(movie["title"])
 
     def hits(self, num_iteration=5, max_result=10):
         """
@@ -71,17 +88,22 @@ class LinkAnalyzer:
         list
             List of names of 10 movies with the most scores obtained by Hits algorithm in descending order
         """
-        a_s = []
-        h_s = []
 
-        #TODO
+        # Run Hits algorithm
+        h, a = nx.hits(self.graph.get_graph(), max_iter=num_iteration)
+        # Sort the hubs and authorities by their scores
+        sorted_hubs = sorted(h, key=h.get, reverse=True)[:max_result]
+        sorted_authorities = sorted(a, key=a.get, reverse=True)[:max_result]
+        return sorted_authorities, sorted_hubs
 
-        return a_s, h_s
-
+def load_dataset():
+    with open('IMDB_crawled.json', 'r') as f:
+        return json.load(f)
+    
 if __name__ == "__main__":
     # You can use this section to run and test the results of your link analyzer
-    corpus = []    # TODO: it shoud be your crawled data
-    root_set = []   # TODO: it shoud be a subset of your corpus
+    corpus = load_dataset()    # TODO: it shoud be your crawled data
+    root_set = random.sample(corpus, 30)   # TODO: it shoud be a subset of your corpus
 
     analyzer = LinkAnalyzer(root_set=root_set)
     analyzer.expand_graph(corpus=corpus)

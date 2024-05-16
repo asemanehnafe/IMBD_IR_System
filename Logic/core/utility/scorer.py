@@ -1,5 +1,5 @@
 import numpy as np
-import numpy
+
 class Scorer:    
     def __init__(self, index, number_of_documents):
         """
@@ -314,16 +314,14 @@ class Scorer:
             float
                 The probability of the term occurring in the document.
             """
+            prob = 0
             if smoothing_method == "bayes":
-                # Implement Bayesian smoothing logic
-                prob = (tf + alpha * cf * alpha) / (document_lenght + alpha)
+                if (document_lenght + alpha > 0):
+                    prob = (tf + alpha * cf) / (document_lenght + alpha)
             elif smoothing_method == "naive":
-                # Implement Naive smoothing logic
                 M = len(self.index)
                 prob = (tf + 1/ M) / (document_lenght + 1)
             elif smoothing_method == "mixture":
-                # Implement Mixture smoothing logic
-                prob = 0
                 if document_lenght != 0:
                     prob = (1 - lamda) * cf + lamda * (tf / document_lenght)
             else:
