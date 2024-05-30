@@ -31,15 +31,12 @@ class LinkAnalyzer:
         This function has no parameters. You can use self to get or change attributes
         """
         for movie in self.root_set:
-            # Add movie node to the graph
             self.graph.add_node(movie["title"])
-            # Add edges between movie and its stars
             for star in movie["stars"]:
                 self.graph.add_edge(movie["title"], star)
-                # Add star to the list of hubs
-                self.hubs.append(star)
-            # Add movie to the list of authorities
-            self.authorities.append(movie["title"])
+                if star not in self.authorities:
+                    self.authorities.append(star)
+            self.hubs.append(movie["title"])
 
     def expand_graph(self, corpus):
         """
@@ -58,17 +55,15 @@ class LinkAnalyzer:
         and refer to the nodes in the root set to the graph and to the list of hubs and authorities.
         """
         for movie in corpus:
-            # Add movie node to the graph if not already present
-            self.graph.add_node(movie["title"])
-            # Add edges between movie and its stars
             for star in movie["stars"]:
-                self.graph.add_edge(movie["title"], star)
-                # Add star to the list of hubs if not already present
-                if star not in self.hubs:
-                    self.hubs.append(star)
-            # Add movie to the list of authorities if not already present
-            if movie["title"] not in self.authorities:
-                self.authorities.append(movie["title"])
+                for root_movie in self.root_set:
+                    if root_movie["stars"] == star:
+                        self.graph.add_node(movie["title"])
+                        self.graph.add_edge(movie["title"], star)
+                        if star not in self.authorities:
+                            self.authorities.append(star)
+                        if movie["title"] not in self.hubs:
+                            self.hubs.append(movie["title"])
 
     def hits(self, num_iteration=5, max_result=10):
         """
@@ -103,7 +98,7 @@ def load_dataset():
 if __name__ == "__main__":
     # You can use this section to run and test the results of your link analyzer
     corpus = load_dataset()    # TODO: it shoud be your crawled data
-    root_set = random.sample(corpus, 30)   # TODO: it shoud be a subset of your corpus
+    root_set = random.sample(corpus, 770)   # TODO: it shoud be a subset of your corpus
 
     analyzer = LinkAnalyzer(root_set=root_set)
     analyzer.expand_graph(corpus=corpus)

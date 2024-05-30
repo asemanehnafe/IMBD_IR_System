@@ -1,4 +1,4 @@
-from .indexes_enum import Indexes,Index_types
+from Logic.core.indexer.indexes_enum import Indexes,Index_types
 import json
 
 class Index_reader:

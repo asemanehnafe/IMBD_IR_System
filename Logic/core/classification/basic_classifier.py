@@ -1,21 +1,22 @@
 import numpy as np
 from tqdm import tqdm
-
-from ..word_embedding.fasttext_model import FastText
+import sys
+sys.path.append('d:/dars/MIR project 2024/IMBD_IR_System')
+from Logic.core.word_embedding.fasttext_model import FastText
 
 
 class BasicClassifier:
     def __init__(self):
-        raise NotImplementedError()
+        pass
 
     def fit(self, x, y):
-        raise NotImplementedError()
+        pass
 
     def predict(self, x):
-        raise NotImplementedError()
+        pass
 
     def prediction_report(self, x, y):
-        raise NotImplementedError()
+        pass
 
     def get_percent_of_positive_reviews(self, sentences):
         """
@@ -29,5 +30,5 @@ class BasicClassifier:
         float
             The percentage of positive reviews
         """
-        pass
+        return sum(self.predict([sentence])[0] == 'positive' for sentence in sentences) / len(sentences)
 

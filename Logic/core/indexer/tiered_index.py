@@ -1,5 +1,8 @@
-from .indexes_enum import Indexes, Index_types
-from .index_reader import Index_reader
+import sys
+sys.path.append('d:/dars/MIR project 2024/IMBD_IR_System')
+
+from indexes_enum import Indexes, Index_types
+from index_reader import Index_reader
 import json
 
 

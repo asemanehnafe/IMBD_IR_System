@@ -2,7 +2,7 @@ import time
 import os
 import json
 import copy
-from .indexes_enum import Indexes
+from indexes_enum import Indexes
 import collections
 import sys
 sys.path.append('d:\\dars\\MIR project 2024\\IMBD_IR_System')
@@ -348,7 +348,7 @@ class Index:
 
 # TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
 if __name__ == "__main__":
-    with open('IMDB_crawled.json', 'r') as f:
+    with open('IMDB_crawled_main.json', 'r') as f:
         movies = json.load(f)
     preprocessor = Preprocessor(movies)
     movies = preprocessor.preprocess()

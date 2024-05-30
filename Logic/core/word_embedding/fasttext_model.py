@@ -1,10 +1,12 @@
 import fasttext
 import re
-
+import string
+import numpy as np
 from tqdm import tqdm
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from scipy.spatial import distance
+import tempfile
 
 from .fasttext_data_loader import FastTextDataLoader
 
@@ -31,7 +33,27 @@ def preprocess_text(text, minimum_length=1, stopword_removal=True, stopwords_dom
     punctuation_removal: bool
         whether to remove punctuations
     """
-    pass
+    if lower_case:
+        text = text.lower()
+
+    if punctuation_removal:
+            text = re.sub('['+string.punctuation+']', '', text)
+    if stopword_removal:
+        stop_words = set(stopwords.words('english'))
+        if stopwords_domain:
+            stop_words.update(stopwords_domain)
+        words = word_tokenize(text)
+        filtered_words = [word for word in words if word not in stop_words]
+
+        text = ' '.join(filtered_words)
+
+    if minimum_length > 0:
+        words = word_tokenize(text)
+        filtered_words = [word for word in words if len(word) >= minimum_length]
+
+        text = ' '.join(filtered_words)
+
+    return text
 
 class FastText:
     """
@@ -67,7 +89,12 @@ class FastText:
         texts : list of str
             The texts to train the FastText model.
         """
-        pass
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(temp_file.name, 'w', encoding='utf-8') as f:
+            for text in texts:
+                f.write(text + '\n')
+        self.model = fasttext.train_unsupervised(input=temp_file.name, model=self.method)
+        temp_file.close()
 
     def get_query_embedding(self, query):
         """
@@ -87,8 +114,14 @@ class FastText:
         np.ndarray
             The embedding for the query.
         """
-        pass
-
+        # tokens = query.split()
+        # embeddings = []
+        # for token in tokens:
+        #     embeddings.append(self.model.get_word_vector(token))
+        # query_embedding = np.mean(embeddings, axis=0)
+        # return query_embedding
+        return self.model.get_sentence_vector(query)
+    
     def analogy(self, word1, word2, word3):
         """
         Perform an analogy task: word1 is to word2 as word3 is to __.
@@ -101,21 +134,22 @@ class FastText:
         Returns:
             str: The word that completes the analogy.
         """
-        # Obtain word embeddings for the words in the analogy
-        # TODO
+        emb_word1 = self.model.get_word_vector(word1)
+        emb_word1 = self.model.get_word_vector(word1)
+        emb_word2 = self.model.get_word_vector(word2)
+        emb_word3 = self.model.get_word_vector(word3)
 
-        # Perform vector arithmetic
-        # TODO
+        emb_result = emb_word2 - emb_word1 + emb_word3
 
-        # Create a dictionary mapping each word in the vocabulary to its corresponding vector
-        # TODO
+        other_emb = {word: self.model[word] for word in self.model.words if word not in {word1, word2, word3}}
 
-        # Exclude the input words from the possible results
-        # TODO
+        closest_word, min_distance = min(
+            other_emb.items(),
+            key=lambda item: distance.cosine(emb_result, item[1]),
+            default=(None, float('inf'))
+        )
 
-        # Find the word whose vector is closest to the result vector
-        # TODO
-        pass
+        return closest_word
 
     def save_model(self, path='FastText_model.bin'):
         """
@@ -126,7 +160,9 @@ class FastText:
         path : str, optional
             The path to save the FastText model.
         """
-        pass
+        self.model.save_model(path)
+
+
 
     def load_model(self, path="FastText_model.bin"):
         """
@@ -137,9 +173,9 @@ class FastText:
         path : str, optional
             The path to load the FastText model.
         """
-        pass
+        self.model = fasttext.load_model(path)
 
-    def prepare(self, dataset, mode, save=False, path='FastText_model.bin'):
+    def prepare(self, dataset, mode, path='FastText_model.bin'):
         """
         Prepares the FastText model.
 
@@ -154,17 +190,17 @@ class FastText:
             self.train(dataset)
         if mode == 'load':
             self.load_model(path)
-        if save:
+        if mode == 'save':
             self.save_model(path)
 
 if __name__ == "__main__":
-    ft_model = FastText(preprocessor=preprocess_text, method='skipgram')
+    ft_model = FastText(method='skipgram')
 
-    path = './Phase_1/index/'
-    ft_data_loader = FastTextDataLoader()
+    path = './index'
+    ft_data_loader = FastTextDataLoader(path)
 
-    X = ft_data_loader.create_train_data(path)
-
+    X, y = ft_data_loader.create_train_data()
+    np.savez('arrays.npz', arr1=X, arr2=y)
     ft_model.train(X)
     ft_model.prepare(None, mode = "save")
 
@@ -177,6 +213,7 @@ if __name__ == "__main__":
 
     print(10 * "*" + "Analogy" + 10 * "*")
     word1 = "man"
-    word2 = "king"
-    word3 = "queen"
+    word2 = "men"
+    word3 = "woman"
     print(f"Similarity between {word1} and {word2} is like similarity between {word3} and {ft_model.analogy(word1, word2, word3)}")
+    ft_model.save_model()

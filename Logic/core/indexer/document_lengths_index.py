@@ -1,6 +1,9 @@
+import sys
+sys.path.append('d:/dars/MIR project 2024/IMBD_IR_System')
+
 import json
-from .indexes_enum import Indexes,Index_types
-from .index_reader import Index_reader
+from indexes_enum import Indexes,Index_types
+from index_reader import Index_reader
 
 class DocumentLengthsIndex:
     def __init__(self,path='index/'):
@@ -41,7 +44,7 @@ class DocumentLengthsIndex:
         """
         document_length = {}
         for doc_id, doc in self.documents_index.items():
-            if where in doc:
+            if where in doc and doc[where] != None:
                 document_length[doc_id] = len(doc[where])
             else:
                 document_length[doc_id] = 0
